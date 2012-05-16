@@ -68,7 +68,10 @@ def getOpenTickets(config):
     for ticket in tickets['tickets']:
         resp, content = client.request(url + '/' + str(ticket['ticket_num']))
         data = json.loads(content)
-        if data['ticket']['status'] not in ['closed', 'wont-fix', 'duplicate']:
-            ret_tickets.append(data['ticket'])
+        tvals = data['ticket']
+        if ('custom_fields' in tvals and '_milestone' in tvals['custom_fields']
+            and tvals['custom_fields']['_milestone'] == config['release']
+            and tvals['status'] not in ['closed', 'wont-fix', 'duplicate']):
+            ret_tickets.append(ticket)
 
     return ret_tickets
