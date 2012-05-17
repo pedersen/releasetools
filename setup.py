@@ -22,7 +22,7 @@ setup(
     description='A set of tools and helper scripts to make managing a release process easier',
     author='Michael J. Pedersen',
     author_email='m.pedersen@icelus.org',
-    #url='',
+    url='https://github.com/pedersen/releasetools',
     install_requires=[
         'basketweaver',
         'certifi',
