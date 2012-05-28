@@ -42,6 +42,7 @@ setup(
     entry_points={
         'console_scripts': [
             'tracker = releasetools.tracker.main:main',
+            'mkbasket = releasetools.mkbasket.main:main',
             ]
         },
     zip_safe=True

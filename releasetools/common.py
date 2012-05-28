@@ -40,7 +40,7 @@ def saveConfig(config, progname):
     if not configfile.has_section(progname):
         configfile.add_section(progname)
 
-    optnames = filter(lambda x: x not in ['project', 'config'], config.keys())
+    optnames = filter(lambda x: x not in ['project', 'config', 'output', 'release'], config.keys())
     for opt in optnames:
         configfile.set(progname, opt, config[opt])
 
