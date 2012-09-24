@@ -2,11 +2,14 @@
 Following the documentation here: http://sourceforge.net/p/forge/documentation/API%20-%20Beta/
 """
 import json
+import logging
 import urlparse
 import webbrowser
 
 import certifi
 import oauth2
+
+from pprint import pprint
 
 def init(config):
     if 'consumer_key' not in config and 'consumer_secret' not in config:
@@ -51,27 +54,57 @@ def getOauthToken(config):
     config['oauth_token'] = access_token['oauth_token']
     config['oauth_token_secret'] = access_token['oauth_token_secret']
 
-def getOpenTickets(config):
-    
+def getSfRestResult(config, url):
+    l = logging.getLogger(__name__ + ".getSfRestResult")
     URL_BASE='http://sourceforge.net/rest/'
 
+    l.debug('configuring')
     consumer = oauth2.Consumer(config['consumer_key'], config['consumer_secret'])
     access_token = oauth2.Token(config['oauth_token'], config['oauth_token_secret'])
     client = oauth2.Client(consumer, access_token)
     client.ca_certs = certifi.where()
 
-    url = URL_BASE + 'p/' + config['project'] + '/tickets'
+    url = URL_BASE + url
+    l.debug('requesting %s' % (url))
     resp, content = client.request(url)
-    tickets = json.loads(str(content))
+    l.debug('content: %s' % (content))
+    l.debug('returning')
+    return json.loads(str(content))
 
+def getTicket(config, project, ticket_num, get_comments=False):
+    turl = project + '/tickets/'
+    ticket = getSfRestResult(config, turl + str(ticket_num))['ticket']
+
+    comments = []
+    if get_comments:
+        durl = project + '/tickets/_discuss/thread/%s/%s'
+        threadid = ticket['discussion_thread']['_id']
+        for post in ticket['discussion_thread']['posts']:
+            comments.append(getSfRestResult(config, durl % (threadid, post['slug']))['post'])
+    ticket['comments'] = comments
+
+    return ticket
+
+def getTicketList(config, project):
+    return getSfRestResult(config, project + '/tickets')
+
+def getTickets(config):
+    project = 'p/' + config['project']
+    tickets = getTicketList(config, project)
+    
     ret_tickets = []
     for ticket in tickets['tickets']:
-        resp, content = client.request(url + '/' + str(ticket['ticket_num']))
-        data = json.loads(content)
-        tvals = data['ticket']
-        if ('custom_fields' in tvals and '_milestone' in tvals['custom_fields']
-            and tvals['custom_fields']['_milestone'] == config['release']
-            and tvals['status'] not in ['closed', 'wont-fix', 'duplicate']):
+        ret_tickets.append(getTicket(config, project, ticket['ticket_num']))
+
+    return ret_tickets
+
+def getOpenTickets(config):
+
+    ret_tickets = []
+    for ticket in getTickets(config):
+        if ('custom_fields' in ticket and '_milestone' in ticket['custom_fields']
+            and ticket['custom_fields']['_milestone'] == config['release']
+            and ticket['status'] not in ['closed', 'wont-fix', 'duplicate']):
             ret_tickets.append(ticket)
 
     return ret_tickets

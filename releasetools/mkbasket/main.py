@@ -1,11 +1,15 @@
 import os
+import shutil
 import sys
 
 from ..common import getConfig, saveConfig, optionsbase
 
 progname = 'mkbasket'
 
-def noVenvCmd(runcmd):
+def workingVenvCmd(runcmd, config):
+    workdir = os.path.sep.join([config['workspace'], 'venv'])
+    workbin = os.path.sep.join([workdir, 'bin'])
+    
     evars = ['PATH', 'VIRTUAL_ENV', 'VIRTUALENVWRAPPER_HOOK_DIR',
              'VIRTUALENVWRAPPER_LOG_DIR', 'VIRTUALENVWRAPPER_PROJECT_FILENAME']
     saved = {}
@@ -17,7 +21,12 @@ def noVenvCmd(runcmd):
     path = saved['PATH'].split(':')
     novenvpath = filter(lambda x: not x.startswith(venv), path)
     spath = ":".join(novenvpath)
+    spath = "%s:%s" % (workbin, spath)
+    
     os.environ['PATH'] = spath
+    os.environ['VIRTUAL_ENV'] = workdir
+    os.environ['EGGBASKET'] = config['output']
+    os.environ['WORKSPACE'] = config['workspace']
     
     sysret = os.system(runcmd)
 
@@ -39,7 +48,13 @@ def makeBaselineBasket(config):
         cp = cp.replace('{prev_version}', config['prev_version'])
         cp = cp.replace('{new_version}',  config['new_version'])
         os.system(cp)
-            
+
+def makeNewVenv(config):
+    venv = os.path.sep.join([config['workspace'], 'venv'])
+    if (os.path.exists(venv)):
+        shutil.rmtree(venv)
+    os.system('virtualenv --no-site-packages %s' % (venv))
+    
 def main():
     optionsbase.add_option('-o', '--output', dest='output',
                            action='store', type='string',
@@ -61,7 +76,7 @@ def main():
         sys.exit(1)
 
     if 'prev_version' not in config or not config['prev_version']:
-        print "Error: missing --previousversion. Aborting."
+        print "Error: missing --version. Aborting."
         sys.exit(1)
         
     if 'new_version' not in config or not config['new_version']:
@@ -73,7 +88,7 @@ def main():
 
     initBasket(config)
     makeBaselineBasket(config)
-    #print "make new virtualenv"
+    makeNewVenv(config)
     #print "perform installation process"
     #print "perform application pre-test"
     #print "perform application test"

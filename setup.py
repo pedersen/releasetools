@@ -43,6 +43,7 @@ setup(
         'console_scripts': [
             'tracker = releasetools.tracker.main:main',
             'mkbasket = releasetools.mkbasket.main:main',
+            'sfgit = releasetools.sfgit:main',
             ]
         },
     zip_safe=True
