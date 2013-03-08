@@ -29,6 +29,7 @@ setup(
         'oauth2',
         'virtualenv',
         'yolk',
+        'requests'
         ],
     setup_requires=[],
     paster_plugins=[],
@@ -41,9 +42,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'tracker = releasetools.tracker.main:main',
-            'mkbasket = releasetools.mkbasket.main:main',
-            'sfgit = releasetools.sfgit:main',
+            #'tracker = releasetools.tracker:main',
             ]
         },
     zip_safe=True
