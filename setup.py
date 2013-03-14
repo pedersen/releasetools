@@ -1,11 +1,4 @@
 # -*- coding: utf-8 -*-
-#quckstarted Options:
-#
-# sqlalchemy: True
-# auth:       sqlalchemy
-# mako:       False
-#
-#
 
 import sys
 
@@ -25,11 +18,9 @@ setup(
     url='https://github.com/pedersen/releasetools',
     install_requires=[
         'basketweaver',
-        'certifi',
-        'oauth2',
+        'requests',
         'virtualenv',
         'yolk',
-        'requests'
         ],
     setup_requires=[],
     paster_plugins=[],
@@ -42,7 +33,9 @@ setup(
 
     entry_points={
         'console_scripts': [
-            #'tracker = releasetools.tracker:main',
+            'tgrelease = releasetools.tgrelease:main',
+            'tracker = releasetools.tracker:main',
+            'travis = releasetools.travis:main',
             ]
         },
     zip_safe=True
