@@ -3,9 +3,6 @@
 # basketbuilder
 # change log generator
 
-# check travis for tg2, tg2devtools, tg2docs
-# if bad, abort
-
 # check out tg2, tg2devtools, tgdocs, website
 # for each repository, checkout next, and then merge development
 # run nosetests for tg2
@@ -43,6 +40,8 @@ import sys
 import requests
 
 from .tracker import checkMilestone
+from .travis import checkLatestBuild
+
 tgrepositories = [
     ('TurboGears', 'tg2'),
     ('TurboGears', 'tg2devtools'),
@@ -58,7 +57,17 @@ def checkOpenMilestones(username, password, milestone):
             ready = False
             log.error('Owner: %s, Repository: %s, %s' % (owner, repo, msg))
     return ready
-                
+
+def checkLatestTravis():
+    log = logging.getLogger(__name__ = '.checkLatestTravis')
+    ready = True
+    for owner, repo in tgrepositories:
+        state, msg = checkLatestBuild(owner, repo, 'development')
+        if not state:
+            ready = False
+            log.error('Owner: %s, Repository: %s, Branch: development, %s' % (owner, repo, msg))
+    return ready
+    
 def main():
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger(__name__ + '.main')
@@ -72,6 +81,10 @@ def main():
     if not checkOpenMilestones(args.username, args.password, args.milestone):
         log.error('Not all milestones are closed. Aborting')
         sys.exit(1)
+
+    if not checkLatestTravis():
+        log.error('The latest Travis builds have had at least failure. Aborting.')
+        sys.exit(2)
 
 if __name__ == '__main__':
     main()

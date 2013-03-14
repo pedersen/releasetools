@@ -1,5 +1,4 @@
 import argparse
-import logging
 
 import requests
 
@@ -18,7 +17,6 @@ def checkLatestBuild(owner, repo, branch):
     
     
 def main():
-    logging.basicConfig(level=logging.DEBUG)
     parser = argparse.ArgumentParser(description="Check the status of a project's issue tracker")
     parser.add_argument('--owner', help='The owner of the project')
     parser.add_argument('--repo', help='The repository name of the project')
